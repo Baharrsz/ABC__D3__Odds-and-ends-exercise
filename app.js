@@ -6,8 +6,11 @@ d3.queue()
     .defer(d3.csv,"./data/urban_population/API_SP.URB.TOTL_DS2_en_csv_v2.csv", formatter)
     .awaitAll((error, data) => {
         if (error) console.log(error);
-       let formattedData = formatAllData(data);
-       drawPlot(formattedData)
+        console.log(data);
+        let formattedData = formatAllData(data);
+        console.log(formattedData)
+        let yearData = formattedData[1960];
+        drawPlot(yearData)
     })
     
 
@@ -104,16 +107,25 @@ function formatAllData(data) {
     })
     //Deleting countries that don't have any data for a year
     for (let year in resultObj) {
-        resultObj[year].forEach((countryObj, i) => {
-            let nonNull = Object.values(countryObj).find(val => val);
-            if (!nonNull) resultObj[year].splice(i,1);
+        let indicators = Object.keys(resultObj[year][0]);
+        let filtered = resultObj[year].filter(country => {
+            // indicators.every(indicator => country[indicator])
+            for (indicator of indicators) {
+                if (!country[indicator]) return false;
+            }
+            return true;
         })
+        if (filtered.length === 0) delete resultObj[year]
     }
     return resultObj;
 }
 
 function drawPlot(data) {
     console.log(data)
+
+    //Creatign scales
+    // let xRange = d3.extent(data, d => d.methane);
+    // console.log(xRange)
 
 }
 
