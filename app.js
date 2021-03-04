@@ -6,10 +6,9 @@ d3.queue()
     .defer(d3.csv,"./data/urban_population/API_SP.URB.TOTL_DS2_en_csv_v2.csv", formatter)
     .awaitAll((error, data) => {
         if (error) console.log(error);
-        console.log(data);
         let formattedData = formatAllData(data);
-        console.log(formattedData)
-        let yearData = formattedData[1960];
+        console.log("All years", formattedData)
+        let yearData = formattedData[1990];
         drawPlot(yearData)
     })
     
@@ -121,11 +120,38 @@ function formatAllData(data) {
 }
 
 function drawPlot(data) {
+    //Setting the SVG
+    const height = 600;
+    const width = 600;
+    const padding = 25;
+
+    let svg = d3.select("svg")
+                    .attr("height", height)
+                    .attr("width", width)
+                    .style("border", "solid black 1px")
+
     console.log(data)
 
     //Creatign scales
-    // let xRange = d3.extent(data, d => d.methane);
-    // console.log(xRange)
+    let xRange = d3.extent(data, d => d.methane / d.population);
+    let xScale = d3.scaleLinear()
+                    .domain(xRange)
+                    .range([padding, width - 2 * padding]);
 
+    let yRange = d3.extent(data, d => d.co2 / d.population);
+    let yScale = d3.scaleLinear()
+                    .domain(yRange)
+                    .range([height - 2 * padding, padding]);
+
+    let rScale = d3.scaleLinear()
+                    .domain([0,100])
+                    .range([5, 30]);
+
+    let clrScale = d3.scaleLinear()
+                        .domain([0,1])
+                        .range(["black", "lime"]);
+
+
+    
 }
 
