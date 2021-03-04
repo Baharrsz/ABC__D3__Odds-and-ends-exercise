@@ -6,8 +6,9 @@ d3.queue()
     .defer(d3.csv,"./data/urban_population/API_SP.URB.TOTL_DS2_en_csv_v2.csv", formatter)
     .awaitAll((error, data) => {
         if (error) console.log(error);
-        console.log(data);
-       
+        console.log(data)
+       let formattedData = formatAllData(data);
+       console.log(formattedData)
     })
 
 
@@ -62,7 +63,7 @@ function formatter(row, i, headers) {
   ];
   if (invalidRows.indexOf(row["Country Name"]) > -1) return;
   let result = {
-      countryName: row["Country Name"], 
+      country: row["Country Name"], 
       indicator: row["Indicator Name"]}
   headers.forEach(key => {
       if (parseInt(key)) result[key] = +row[key]  || null;
@@ -70,3 +71,37 @@ function formatter(row, i, headers) {
   return result;
 }
 
+function formatAllData(data) {
+    let resultObj = {};
+    //indArr is an array for each indicator [{country, indicator, 1960, 1961, ...}]
+    data.forEach((indArr,idx) => {
+        //Getting the indicator
+        let indicator = indArr[0].indicator.split(" ")[0].replace(",","").toLowerCase();
+
+        //country is an object in each indArr {country, indicator, 1960, 1961, ...}
+        indArr.forEach(country => {
+            for (let key in country) {
+                if (parseInt(key)) {
+                    //resultObj should be populated with arrays corresponding to yeaers
+                    if (!resultObj[key]) resultObj[key] = [];
+
+                    //For the firs indArr (idx = 0) arrays in resultObj are empty;
+                    //They should be populated with objects for each country
+                    if (idx === 0){
+                        let countryObj = {};
+                        countryObj.country = country.country;
+                        countryObj[indicator] = country[key];
+                        resultObj[key].push(countryObj)
+                    } 
+                    else{   //For next indArr (idx!=0) country objects exist; 
+                            //Only the new indicator key and value must be added.
+                        resultObj[key].forEach(c => {
+                            if (c.country === country.country) {c[indicator] = country[key];}
+                        })
+                    }
+                }
+            }
+        })
+    })
+    return resultObj;
+}
