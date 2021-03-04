@@ -1,0 +1,9 @@
+.tooltip {
+  opacity: 0;
+}
+.tick line {
+  stroke: lightgrey;
+}
+.yAxis .tick:nth-child(2) line {
+  stroke: transparent;
+}
