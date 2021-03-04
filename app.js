@@ -127,9 +127,9 @@ function formatAllData(data) {
 
 function drawPlot(data) {
     //Setting the SVG
-    const height = 600;
-    const width = 600;
-    const padding = 25;
+    const height = 700;
+    const width = 700;
+    const padding = 50;
 
     let svg = d3.select("svg")
                     .attr("height", height)
@@ -155,9 +155,30 @@ function drawPlot(data) {
 
     let clrScale = d3.scaleLinear()
                         .domain([0,1])
-                        .range(["black", "lime"]);
+                        .range(["black", "green"]);
 
 
-    
+    //Drawing circles
+    let update = svg
+                    .selectAll("circle")
+                    .data(data);
+
+    update
+        .exit()
+        .remove();
+
+    update
+        .enter()
+            .append("circle")
+        .merge(update)
+            .classed("circle", true)
+            .attr("cx", d => {
+                if (!d.population) console.log(d.populationn, d.country)
+                return xScale(d.methane / d.population);
+            })
+            .attr("cy", d => yScale(d.co2 / d.population))
+            .attr("r", d => rScale(d.urban / d.population * 100))
+            .attr("fill", d => clrScale(d.renewable))
+            .attr("stroke", "grey");
 }
 
