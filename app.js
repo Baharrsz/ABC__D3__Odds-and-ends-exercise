@@ -6,11 +6,10 @@ d3.queue()
     .defer(d3.csv,"./data/urban_population/API_SP.URB.TOTL_DS2_en_csv_v2.csv", formatter)
     .awaitAll((error, data) => {
         if (error) console.log(error);
-        console.log(data)
        let formattedData = formatAllData(data);
-       console.log(formattedData)
+       drawPlot(formattedData)
     })
-
+    
 
 function formatter(row, i, headers) {
      var invalidRows = [
@@ -103,5 +102,18 @@ function formatAllData(data) {
             }
         })
     })
+    //Deleting countries that don't have any data for a year
+    for (let year in resultObj) {
+        resultObj[year].forEach((countryObj, i) => {
+            let nonNull = Object.values(countryObj).find(val => val);
+            if (!nonNull) resultObj[year].splice(i,1);
+        })
+    }
     return resultObj;
 }
+
+function drawPlot(data) {
+    console.log(data)
+
+}
+
