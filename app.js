@@ -104,8 +104,11 @@ function formatAllData(data) {
             }
         })
     })
-    //Deleting countries that don't have any data for a year
     for (let year in resultObj) {
+        //Deleting countries that don't have population for a year
+        resultObj[year] = resultObj[year].filter(country => country.population);
+
+        //Deleting years that don't have complete data for any country
         let indicators = Object.keys(resultObj[year][0]);
         let filtered = resultObj[year].filter(country => {
             // indicators.every(indicator => country[indicator])
@@ -115,7 +118,10 @@ function formatAllData(data) {
             return true;
         })
         if (filtered.length === 0) delete resultObj[year]
+
     }
+
+   
     return resultObj;
 }
 
