@@ -1,7 +1,29 @@
 svg,
-input {
+.picker {
   display: block;
   margin: 0 auto;
+}
+
+.picker {
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  padding-top: 15px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+}
+
+.picker * {
+  margin: 0;
+}
+
+.picker__input {
+  margin: 0 15px;
 }
 
 .tooltip {
@@ -23,10 +45,6 @@ input {
 .tick line {
   stroke: lightgrey;
   opacity: 0.3;
-}
-
-.yAxis .tick:nth-child(2) line {
-  stroke: transparent;
 }
 
 .circle {

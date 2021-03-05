@@ -7,9 +7,12 @@ d3.queue()
     .awaitAll((error, data) => {
         if (error) console.log(error);
         let formattedData = formatAllData(data);
-        console.log('All years', formattedData)
-        let yearData = formattedData[1990];
-        drawPlot(yearData, 1990);
+        let years = Object.keys(formattedData);
+        let initialYear = d3.min(years)
+        let plotSizes = {height: 700, width: 700, padding: 100}
+        setPlot(plotSizes)
+        drawPlot(formattedData, initialYear, plotSizes);
+        pickYearAndPlot(formattedData, plotSizes)
         tooltip();
     })
     
@@ -126,17 +129,64 @@ function formatAllData(data) {
     return resultObj;
 }
 
-function drawPlot(data, year) {
+function setPlot(plotSizes) {
     //Setting the SVG
-    const height = 700;
-    const width = 700;
-    const padding = 100;
-
+    const {height, width, padding} = plotSizes;
     let svg = d3.select('svg')
                     .attr('height', height)
                     .attr('width', width)
 
-    console.log(data)
+    svg
+    .append('g')
+        .classed('circles', true)
+
+
+    //Setting the Axes
+    svg
+    .append('g')
+        .classed('xAxis', true)
+        .attr('transform', `translate(0, ${height- padding / 2})`)
+
+    svg
+    .append('g')
+        .classed('yAxis', true)
+        .attr('transform', `translate(${padding / 2},0)`)
+
+
+    //Axes labels
+    svg
+    .append('text')
+        .classed('.axis-label', true)
+        .text('Methane Emissions (kt of CO2 equivalent per person)')
+        .attr('x', width / 2)
+        .attr('y', height - padding / 8)
+        .attr('text-anchor', 'middle')
+
+    svg
+    .append('text')
+        .classed('.axis-label', true)
+        .text('CO2 Emissions (kt per person)')
+        .attr('x', padding / 8)
+        .attr('y', (height) / 2)
+        .attr('transform', `rotate(-90 ${padding / 8},${height / 2})`)
+        .attr('text-anchor', 'middle')
+
+    //Plot title
+    svg
+    .append('text')
+        .classed('plotTitle', true)
+        .attr('x', width / 2)
+        .attr('y', padding / 2)
+        .attr('text-anchor', 'middle')
+        .style('font-size', 'x-large')
+
+    return {height, width, padding};
+}
+
+function drawPlot(data, year, plotSizes) {
+    const {height, width, padding} = plotSizes;
+
+    data = data[year];
 
     //Creatign scales
     let xRange = d3.extent(data, d => d.methane / d.population);
@@ -158,30 +208,28 @@ function drawPlot(data, year) {
                         .range(['black', 'green']);
 
 
-
-
     //Drawing circles
-    let update = svg
-                    .append('g')
-                        .selectAll('circle')
+    let update = d3.select('svg')
+                    .select('.circles')
+                    .selectAll('circle')
                         .data(data);
-
+    
     update
         .exit()
         .remove();
-
+    
     update
         .enter()
-            .append('circle')
+        .append('circle')
         .merge(update)
             .classed('circle', true)
+            .transition()
+                .duration(1000)
             .attr('cx', d => {
                 if (!d.population) console.log(d.populationn, d.country)
                 return xScale(d.methane / d.population);
             })
             .attr('cy', d => yScale(d.co2 / d.population))
-            .transition()
-                .duration(1000)
                 .attr('r', d => rScale(d.urban / d.population * 100))
                 .attr('fill', d => clrScale(d.renewable))
                 .attr('stroke', 'grey');
@@ -189,56 +237,21 @@ function drawPlot(data, year) {
 
     //Axes
     let xAxis = d3.axisBottom(xScale)
-                    .ticks(8)
-                    .tickSize(-(height - 2 * padding))
+                    .tickSize(-(height - 3 / 2 * padding))
                     .tickSizeOuter(0)
-    svg
-        .append('g')
-            .classed('xAxis', true)
-            .attr('transform', `translate(0, ${height- padding / 2})`)
+    d3.select('.xAxis')
         .call(xAxis)
 
-
-
     let yAxis = d3.axisLeft(yScale)  
-                    .tickSize(-(width - 2 * padding))
+                    .tickSize(-(width - 3 / 2 * padding))
                     .tickSizeOuter(0)        
-    svg
-        .append('g')
-            .classed('yAxis', true)
-            .attr('transform', `translate(${padding / 2},0)`)
+    d3.select('.yAxis')
         .call(yAxis)
 
-    //Axes labels
-    svg
-        .append('text')
-            .classed('.axis-label', true)
-            .text('Methane Emissions (kt of CO2 equivalent per person)')
-            .attr('x', width / 2)
-            .attr('y', height - padding / 8)
-            .attr('text-anchor', 'middle')
-
-    svg
-        .append('text')
-            .classed('.axis-label', true)
-            .text('CO2 Emissions (kt per person)')
-            .attr('x', padding / 8)
-            .attr('y', (height) / 2)
-            .attr('transform', `rotate(-90 ${padding / 8},${height / 2})`)
-            .attr('text-anchor', 'middle')
-
     //Plot title
-    svg
-        .append('text')
-            .classed('.title', true)
-            .text(`CO2 vs Methane Emissions for the year ${year}`)
-            .attr('x', width / 2)
-            .attr('y', padding / 2)
-            .attr('text-anchor', 'middle')
-            .style('font-size', 'x-large')
-
-
-
+    d3.select('svg')
+    .select('.plotTitle')
+        .text(`CO2 vs Methane Emissions for the year ${year}`)
 }
 
 function tooltip() {
@@ -275,3 +288,17 @@ function hideTooltip(d) {
         .style('opacity', 0)
 }
 
+function pickYearAndPlot(data, plotSizes){
+    let years = Object.keys(data);
+    let year;
+    let input = d3.select('input')
+    input
+        .property('min', 0)
+        .property('max', years.length)
+        .on('change', () => {
+            year = years[input.property('value')];
+            d3.select(".picker__selected")
+                .text(year)
+            drawPlot(data, year, plotSizes)
+        })
+}
