@@ -216,23 +216,27 @@ function drawPlot(data, year, plotSizes) {
     
     update
         .exit()
+        .transition()
+            .duration(1000)
+            .attr('r', 0)
         .remove();
     
     update
         .enter()
         .append('circle')
+        //The duplication here (the 2 lines below and after transition()) is so that for the first plot
+        //transition only happens for the radius and the circles don't drop from out of space into the plot.
+            .attr('cx', d => xScale(d.methane / d.population))
+            .attr('cy', d => yScale(d.co2 / d.population))
         .merge(update)
             .classed('circle', true)
-            .transition()
-                .duration(1000)
-            .attr('cx', d => {
-                if (!d.population) console.log(d.populationn, d.country)
-                return xScale(d.methane / d.population);
-            })
+        .transition()
+            .duration(1000)
+            .attr('cx', d => xScale(d.methane / d.population))
             .attr('cy', d => yScale(d.co2 / d.population))
-                .attr('r', d => rScale(d.urban / d.population * 100))
-                .attr('fill', d => clrScale(d.renewable))
-                .attr('stroke', 'grey');
+            .attr('r', d => rScale(d.urban / d.population * 100))
+            .attr('fill', d => clrScale(d.renewable))
+            .attr('stroke', 'grey');
 
 
     //Axes
@@ -256,8 +260,8 @@ function drawPlot(data, year, plotSizes) {
 
 function tooltip() {
 var tooltip = d3.select('body')
-					.append('div')
-						.classed('tooltip', true)
+				.append('div')
+					.classed('tooltip', true)
 
     d3.selectAll('.circle')
         .on('mousemove', showTooltip)
@@ -290,13 +294,12 @@ function hideTooltip(d) {
 
 function pickYearAndPlot(data, plotSizes){
     let years = Object.keys(data);
-    let year;
     let input = d3.select('input')
     input
         .property('min', 0)
-        .property('max', years.length)
+        .property('max', years.length - 1)
         .on('change', () => {
-            year = years[input.property('value')];
+            let year = years[input.property('value')];
             d3.select(".picker__selected")
                 .text(year)
             drawPlot(data, year, plotSizes)
