@@ -9,7 +9,8 @@ d3.queue()
         let formattedData = formatAllData(data);
         console.log('All years', formattedData)
         let yearData = formattedData[1990];
-        drawPlot(yearData)
+        drawPlot(yearData);
+        tooltip();
     })
     
 
@@ -154,7 +155,7 @@ function drawPlot(data) {
                     .range([5, 30]);
 
     let clrScale = d3.scaleLinear()
-                        .domain([0,1])
+                        .domain([0,100])
                         .range(['black', 'green']);
 
 
@@ -226,3 +227,36 @@ function drawPlot(data) {
 
 
 }
+
+function tooltip() {
+var tooltip = d3.select('body')
+					.append('div')
+						.classed('tooltip', true)
+
+    d3.selectAll('.circle')
+        .on('mousemove', showTooltip)
+        .on('touchstart', showTooltip)
+        .on('mouseout', hideTooltip)
+        .on('touchend', hideTooltip)
+}
+
+function showTooltip(d){
+    let event = d3.event;
+    let tooltip = d3.select('.tooltip')
+    tooltip
+        .style('opacity', 1)
+        .style('left', `${event.x - tooltip.node().offsetWidth / 2}px`)
+        .style('top', `${event.y}px`)
+        .html(`
+            <p style="font-weight:bold">${d.country}</p>
+            <p>Popultaion: ${d.population / 1E6} million</p>
+            <p>Urban Population: ${d3.format(".2f")(d.urban / d.population * 100)}%</p>
+            <p>Renewable Energy: ${d3.format(".2f")(d.renewable)}%</p>
+        `)
+}
+
+function hideTooltip(d) {
+    d3.select('.tooltip')
+        .style('opacity', 0)
+}
+
