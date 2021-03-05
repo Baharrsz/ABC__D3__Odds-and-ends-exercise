@@ -181,9 +181,11 @@ function drawPlot(data) {
                 return xScale(d.methane / d.population);
             })
             .attr('cy', d => yScale(d.co2 / d.population))
-            .attr('r', d => rScale(d.urban / d.population * 100))
-            .attr('fill', d => clrScale(d.renewable))
-            .attr('stroke', 'grey');
+            .transition()
+                .duration(1000)
+                .attr('r', d => rScale(d.urban / d.population * 100))
+                .attr('fill', d => clrScale(d.renewable))
+                .attr('stroke', 'grey');
 
 
     //Axes
