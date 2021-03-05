@@ -9,7 +9,7 @@ d3.queue()
         let formattedData = formatAllData(data);
         console.log('All years', formattedData)
         let yearData = formattedData[1990];
-        drawPlot(yearData);
+        drawPlot(yearData, 1990);
         tooltip();
     })
     
@@ -126,7 +126,7 @@ function formatAllData(data) {
     return resultObj;
 }
 
-function drawPlot(data) {
+function drawPlot(data, year) {
     //Setting the SVG
     const height = 700;
     const width = 700;
@@ -135,7 +135,6 @@ function drawPlot(data) {
     let svg = d3.select('svg')
                     .attr('height', height)
                     .attr('width', width)
-                    .style('border', 'solid black 1px')
 
     console.log(data)
 
@@ -190,12 +189,13 @@ function drawPlot(data) {
 
     //Axes
     let xAxis = d3.axisBottom(xScale)
+                    .ticks(8)
                     .tickSize(-(height - 2 * padding))
                     .tickSizeOuter(0)
     svg
         .append('g')
             .classed('xAxis', true)
-            .attr('transform', `translate(0, ${height- padding})`)
+            .attr('transform', `translate(0, ${height- padding / 2})`)
         .call(xAxis)
 
 
@@ -206,26 +206,37 @@ function drawPlot(data) {
     svg
         .append('g')
             .classed('yAxis', true)
-            .attr('transform', `translate(${padding},0)`)
+            .attr('transform', `translate(${padding / 2},0)`)
         .call(yAxis)
 
     //Axes labels
     svg
         .append('text')
+            .classed('.axis-label', true)
             .text('Methane Emissions (kt of CO2 equivalent per person)')
             .attr('x', width / 2)
-            .attr('y', height - padding / 2)
-            .attr('stroke', 'black')
+            .attr('y', height - padding / 8)
             .attr('text-anchor', 'middle')
 
     svg
         .append('text')
+            .classed('.axis-label', true)
             .text('CO2 Emissions (kt per person)')
-            .attr('x', padding /2)
+            .attr('x', padding / 8)
             .attr('y', (height) / 2)
-            .attr('transform', `rotate(-90 ${padding / 2},${height / 2})`)
-            .attr('stroke', 'black')
+            .attr('transform', `rotate(-90 ${padding / 8},${height / 2})`)
             .attr('text-anchor', 'middle')
+
+    //Plot title
+    svg
+        .append('text')
+            .classed('.title', true)
+            .text(`CO2 vs Methane Emissions for the year ${year}`)
+            .attr('x', width / 2)
+            .attr('y', padding / 2)
+            .attr('text-anchor', 'middle')
+            .style('font-size', 'x-large')
+
 
 
 }
@@ -254,6 +265,8 @@ function showTooltip(d){
             <p>Popultaion: ${d.population / 1E6} million</p>
             <p>Urban Population: ${d3.format(".2f")(d.urban / d.population * 100)}%</p>
             <p>Renewable Energy: ${d3.format(".2f")(d.renewable)}%</p>
+            <p>Methane Emissionn: ${d3.format(".3f")(d.methane / d.population)}</p>
+            <p>CO2 Emission: ${d3.format(".3f")(d.co2 / d.population)}</p>
         `)
 }
 
